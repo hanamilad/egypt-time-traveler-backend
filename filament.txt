@@ -1,0 +1,15 @@
+//علشان اعمل صفحة فى الداش بورد
+1-اعمل المودل 
+php artisan make:model SiteInfo -m 
+2-اعمل الصفحة  الى هتكون بداخل هذا المسار app\Filament\Resources
+php artisan make:filament-resource SiteInfo  
+
+
+
+
+//علشان اعمل صفحة تتعرض فى الويب سايت العادى 
+php artisan make:livewire site-info 
+دى هتعمل ملف فى 
+app\Livewire
+و 
+resources\views\livewire
