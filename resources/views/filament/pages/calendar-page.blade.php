@@ -26,6 +26,12 @@
                         }
                     },
                     eventClick: (info) => {
+                        if (info.event.url) {
+                            info.jsEvent.preventDefault();
+                            window.location.href = info.event.url;
+                            return;
+                        }
+
                         if (info.event.id.startsWith('soldout-')) {
                             if (confirm('Do you want to re-open availability for ' + info.event.startStr + '?')) {
                                 this.$wire.toggleSoldOut(info.event.startStr);

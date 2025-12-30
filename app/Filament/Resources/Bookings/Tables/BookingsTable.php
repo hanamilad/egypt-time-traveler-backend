@@ -111,28 +111,45 @@ class BookingsTable
             ->defaultSort('date', 'desc')
             ->recordActions([
                 EditAction::make(),
-                Action::make('today_closing')
-                    ->label("Today's Closing")
+                Action::make('accept_trip')
+                    ->label("Accept the trip")
                     ->hidden(fn (Booking $record) => 
                         app(AvailabilityService::class)->isDateClosed($record->date->format('Y-m-d'))
                     )
-                    ->icon('heroicon-o-lock-closed')
-                    ->color('danger')
-                    ->requiresConfirmation()
-                    ->modalHeading("Close this tour for today?")
-                    ->modalDescription("This will mark this tour as 'sold_out' for this date and notify other customers.")
-                    ->form([
-                        Textarea::make('message')
-                            ->label('Notification Message')
-                            ->placeholder('Enter the message to send to all customers booked for this tour on this day...')
-                            ->required()
-                            ->rows(5),
-                    ])
+                    ->icon('heroicon-o-check-circle')
+                    ->color('success')
+                    ->requiresConfirmation(function (Booking $record) {
+                        return Booking::where('tour_id', $record->tour_id)
+                            ->whereDate('date', $record->date)
+                            ->where('id', '!=', $record->id)
+                            ->exists();
+                    })
+                    ->modalHeading("Accept trip and close date?")
+                    ->modalDescription("There are other bookings for this tour on this day. They will be notified that the tour is now closed.")
+                    ->form(function (Booking $record) {
+                        $hasOtherBookings = Booking::where('tour_id', $record->tour_id)
+                            ->whereDate('date', $record->date)
+                            ->where('id', '!=', $record->id)
+                            ->exists();
+
+                        if (!$hasOtherBookings) {
+                            return [];
+                        }
+
+                        return [
+                            Textarea::make('message')
+                                ->label('Notification Message')
+                                ->placeholder('Enter the message to send to other customers...')
+                                ->required()
+                                ->rows(5)
+                                ->default('We are sorry, but this tour date is now closed as it has reached maximum capacity or the guide is no longer available.'),
+                        ];
+                    })
                     ->action(function (Booking $record, array $data) {
                         // 1. Update the chosen booking to confirmed
                         $record->update(['status' => 'confirmed']);
 
-                        // 2. Close availability GLOBALTY for this date (All tours)
+                        // 2. Close availability GLOBALLY for this date (All tours)
                         app(AvailabilityService::class)->closeDate($record->date->format('Y-m-d'));
                         
                         // 3. Find OTHER bookings for the same tour and date
@@ -141,15 +158,19 @@ class BookingsTable
                             ->where('id', '!=', $record->id)
                             ->get();
 
-                        // 4. Send emails to ONLY the other bookings
-                        foreach ($otherBookings as $booking) {
-                            if ($booking->email) {
-                                Mail::to($booking->email)->send(new TourClosingNotification($booking, $data['message']));
+                        // 4. Send emails only if message is provided and bookings exist
+                        if (!empty($data['message']) && $otherBookings->count() > 0) {
+                            foreach ($otherBookings as $booking) {
+                                if ($booking->email) {
+                                    Mail::to($booking->email)->send(new TourClosingNotification($booking, $data['message']));
+                                }
                             }
                         }
                         
                         Notification::make()
-                            ->title("Booking confirmed, tour closed, and " . $otherBookings->count() . " notifications sent")
+                            ->title($otherBookings->count() > 0 
+                                ? "Trip accepted, date closed globally, and notifications sent." 
+                                : "Trip accepted and date closed globally.")
                             ->success()
                             ->send();
                     }),

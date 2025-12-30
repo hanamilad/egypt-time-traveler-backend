@@ -14,26 +14,28 @@ class BookingsChart extends ChartWidget
 
     protected function getData(): array
     {
-        $data = Booking::selectRaw('DATE_FORMAT(created_at, "%Y-%m") as month, COUNT(*) as aggregate')
-            ->where('created_at', '>=', now()->subYear())
-            ->groupBy('month')
-            ->orderBy('month')
+        $data = Booking::selectRaw('DATE(created_at) as date, COUNT(*) as aggregate')
+            ->where('created_at', '>=', now()->subDays(30))
+            ->groupByRaw('DATE(created_at)')
+            ->orderBy('date')
             ->get();
 
         return [
             'datasets' => [
                 [
-                    'label' => 'Bookings',
+                    'label' => 'Daily Bookings',
                     'data' => $data->map(fn ($row) => $row->aggregate)->toArray(),
-                    'borderColor' => '#f59e0b', // Amber
+                    'backgroundColor' => 'rgba(245, 158, 11, 0.8)', // Amber with opacity
+                    'borderColor' => '#f59e0b',
+                    'borderWidth' => 1,
                 ],
             ],
-            'labels' => $data->map(fn ($row) => Carbon::createFromFormat('Y-m', $row->month)->format('M Y'))->toArray(),
+            'labels' => $data->map(fn ($row) => Carbon::parse($row->date)->format('d M'))->toArray(),
         ];
     }
 
     protected function getType(): string
     {
-        return 'line';
+        return 'bar';
     }
 }

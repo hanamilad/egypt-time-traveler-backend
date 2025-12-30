@@ -27,17 +27,18 @@ class CalendarPage extends Page
     public function getEvents(string $start, string $end): array
     {
         $bookings = Booking::with('tour:id,title_en')
-            ->select('id', 'tour_id', 'date', 'name', 'status')
+            ->select('id', 'tour_id', 'date', 'name', 'phone', 'status')
             ->whereBetween('date', [$start, $end])
             ->whereIn('status', ['confirmed', 'paid', 'completed'])
             ->get()
             ->map(function (Booking $booking) {
                 return [
                     'id' => 'booking-' . $booking->id,
-                    'title' => ($booking->tour->title_en ?? 'Unknown') . ' (' . $booking->name . ')',
+                    'title' => ($booking->tour->title_en ?? 'Unknown') . " - {$booking->name} ({$booking->phone})",
                     'start' => $booking->date->format('Y-m-d'),
                     'color' => '#fbbf24',
                     'textColor' => '#000',
+                    'url' => \App\Filament\Resources\Bookings\BookingResource::getUrl('edit', ['record' => $booking]),
                 ];
             })
             ->toArray();

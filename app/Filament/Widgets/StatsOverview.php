@@ -12,7 +12,7 @@ class StatsOverview extends BaseWidget
 {
     protected function getStats(): array
     {
-        return cache()->remember('dashboard_stats_overview', now()->addMinutes(15), function () {
+        return cache()->remember('dashboard_stats_overview_v2', now()->addMinutes(15), function () {
             return [
                 Stat::make('Total Tours', Tour::where('status', 'active')->count())
                     ->description('Active tours in system')
@@ -29,7 +29,13 @@ class StatsOverview extends BaseWidget
                     ->descriptionIcon('heroicon-m-ticket')
                     ->color('warning'),
 
-                Stat::make('Total Revenue', '$' . number_format(Booking::whereIn('status', ['paid', 'completed'])->sum('total_price'), 2))
+                Stat::make('Total Revenue', '$' . number_format(
+                    Booking::where(function ($query) {
+                        $query->where('payment_status', 'paid')
+                            ->orWhereIn('status', ['paid', 'completed']);
+                    })->sum('total_price'), 
+                    2
+                ))
                     ->description('Confirmed revenue')
                     ->descriptionIcon('heroicon-m-currency-dollar')
                     ->color('success'),
