@@ -9,6 +9,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use App\Models\TourAvailability;
 use App\Models\Booking;
+use App\Services\AvailabilityService;
 use App\Mail\TourClosingNotification;
 use Illuminate\Support\Facades\Mail;
 use Filament\Notifications\Notification;
@@ -113,10 +114,7 @@ class BookingsTable
                 Action::make('today_closing')
                     ->label("Today's Closing")
                     ->hidden(fn (Booking $record) => 
-                        TourAvailability::where('tour_id', $record->tour_id)
-                            ->whereDate('date', $record->date)
-                            ->where('status', 'sold_out')
-                            ->exists()
+                        app(AvailabilityService::class)->isDateClosed($record->date->format('Y-m-d'))
                     )
                     ->icon('heroicon-o-lock-closed')
                     ->color('danger')
@@ -134,11 +132,8 @@ class BookingsTable
                         // 1. Update the chosen booking to confirmed
                         $record->update(['status' => 'confirmed']);
 
-                        // 2. Close availability for this tour and date (Ensuring a record exists)
-                        TourAvailability::updateOrCreate(
-                            ['tour_id' => $record->tour_id, 'date' => $record->date],
-                            ['status' => 'sold_out', 'available_seats' => 0]
-                        );
+                        // 2. Close availability GLOBALTY for this date (All tours)
+                        app(AvailabilityService::class)->closeDate($record->date->format('Y-m-d'));
                         
                         // 3. Find OTHER bookings for the same tour and date
                         $otherBookings = Booking::where('tour_id', $record->tour_id)

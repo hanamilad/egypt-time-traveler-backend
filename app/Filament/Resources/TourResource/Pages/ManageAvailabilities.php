@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\TourResource\Pages;
 
 use App\Filament\Resources\TourResource;
+use App\Services\AvailabilityService;
 use Filament\Resources\Pages\ManageRelatedRecords;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -94,10 +95,16 @@ class ManageAvailabilities extends ManageRelatedRecords
             ])
             ->headerActions([
                 \Filament\Actions\CreateAction::make()
-                    ->icon('heroicon-o-plus'),
+                    ->icon('heroicon-o-plus')
+                    ->after(fn ($record) => 
+                        app(AvailabilityService::class)->syncGlobalStatus($record->date->format('Y-m-d'), $record->status)
+                    ),
             ])
             ->actions([
-                \Filament\Actions\EditAction::make(),
+                \Filament\Actions\EditAction::make()
+                    ->after(fn ($record) => 
+                        app(AvailabilityService::class)->syncGlobalStatus($record->date->format('Y-m-d'), $record->status)
+                    ),
                 \Filament\Actions\DeleteAction::make(),
             ])
             ->bulkActions([

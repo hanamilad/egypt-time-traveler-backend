@@ -31,6 +31,11 @@ class Booking extends Model
         'payment_reference',
     ];
 
+    protected $casts = [
+        'date' => 'date',
+        'total_price' => 'decimal:2',
+    ];
+
     public function tour()
     {
         return $this->belongsTo(Tour::class);

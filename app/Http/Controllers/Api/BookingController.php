@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use App\Models\Tour;
+use App\Services\AvailabilityService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use App\Models\TourAvailability;
@@ -27,15 +28,11 @@ class BookingController extends Controller
 
         $tour = Tour::findOrFail($validated['tour_id']);
 
-        // Check availability
-        $availability = TourAvailability::where('tour_id', $tour->id)
-            ->whereDate('date', $validated['date'])
-            ->first();
-
-        if ($availability && $availability->status === 'sold_out') {
+        // Global Check: Check if the date is closed for all tours (guide busy)
+        if (app(AvailabilityService::class)->isDateClosed($validated['date'])) {
             return response()->json([
                 'success' => false,
-                'message' => 'Sorry, this tour is closed for the selected date.'
+                'message' => 'Sorry, we are fully booked (Sold Out) for the selected date.'
             ], 422);
         }
         // Calculate price
