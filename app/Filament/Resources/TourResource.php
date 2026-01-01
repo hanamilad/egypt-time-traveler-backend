@@ -47,10 +47,25 @@ class TourResource extends Resource
             \Filament\Forms\Components\TextInput::make('price')
                 ->numeric()
                 ->prefix('$')
-                ->required(),
+                ->required()
+                ->live(onBlur: true),
             \Filament\Forms\Components\TextInput::make('original_price')
                 ->numeric()
-                ->prefix('$'),
+                ->prefix('$')
+                ->live(onBlur: true),
+            \Filament\Forms\Components\Placeholder::make('discount_percentage')
+                ->label('Discount Percentage')
+                ->content(function ($get) {
+                    $price = $get('price');
+                    $originalPrice = $get('original_price');
+
+                    if ($price && $originalPrice && $originalPrice > $price) {
+                        $discount = (($originalPrice - $price) / $originalPrice) * 100;
+                        return number_format($discount, 2) . '% OFF';
+                    }
+
+                    return 'No Discount';
+                }),
             \Filament\Forms\Components\TextInput::make('child_discount_percent')
                 ->label('Child Discount %')
                 ->numeric()
