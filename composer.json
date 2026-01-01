@@ -16,7 +16,8 @@
         "laravel/octane": "^2.12",
         "laravel/tinker": "^2.10.1",
         "livewire/livewire": "^3.6.4",
-        "livewire/volt": "^1.7.0"
+        "livewire/volt": "^1.7.0",
+        "pxlrbt/filament-excel": "^3.3"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",

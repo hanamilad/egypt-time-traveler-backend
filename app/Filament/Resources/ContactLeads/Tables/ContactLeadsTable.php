@@ -76,9 +76,13 @@ class ContactLeadsTable
                         $record->update(['status' => $data['status']]);
                     }),
             ])
+            ->headerActions([
+                \pxlrbt\FilamentExcel\Actions\Tables\ExportAction::make(),
+            ])
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
+                    \pxlrbt\FilamentExcel\Actions\Tables\ExportBulkAction::make(),
                 ]),
             ])
             ->recordClasses(fn (ContactLead $record) => match ($record->status) {
