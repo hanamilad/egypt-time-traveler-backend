@@ -20,10 +20,17 @@ class OffersTable
                     ->searchable()
                     ->sortable()
                     ->limit(40),
+                \Filament\Tables\Columns\TextColumn::make('start_date')
+                    ->label('Start Date')
+                    ->dateTime()
+                    ->sortable(),
                 \Filament\Tables\Columns\TextColumn::make('end_date')
                     ->label('End Date')
                     ->dateTime()
                     ->sortable(),
+                \Filament\Tables\Columns\TextColumn::make('price')
+                        ->label('Price')
+                        ->sortable(),
                 \Filament\Tables\Columns\IconColumn::make('active')
                     ->label('Active')
                     ->boolean(),

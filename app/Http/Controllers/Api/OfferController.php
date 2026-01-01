@@ -20,7 +20,9 @@ class OfferController extends Controller
             'data' => [
                 'title_en' => $offer->title_en,
                 'title_de' => $offer->title_de,
+                'start_date' => $offer->start_date ? $offer->start_date->toIso8601String() : null,
                 'end_date' => $offer->end_date->toIso8601String(),
+                'price' => $offer->price,
                 'target_link' => '/tour/' . $offer->target_link,
                 'image' => asset('storage/' . $offer->image),
             ]

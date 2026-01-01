@@ -18,11 +18,21 @@ class OfferForm
                     ->label('Title (German)')
                     ->required()
                     ->maxLength(255),
+                \Filament\Forms\Components\DateTimePicker::make('start_date')
+                    ->label('Offer Start Date')
+                    ->required()
+                    ->native(false),
                 \Filament\Forms\Components\DateTimePicker::make('end_date')
                     ->label('Offer End Date')
                     ->required()
                     ->native(false)
-                    ->minDate(now()),
+                    ->minDate(now())
+                    ->after('start_date'),
+                \Filament\Forms\Components\TextInput::make('price')
+                    ->label('Offer Price')
+                    ->numeric()
+                    ->prefix('$') // Using $ as per TourResource
+                    ->required(),
                 \Filament\Forms\Components\Select::make('target_link')
                     ->label('Target Tour')
                     ->required()
