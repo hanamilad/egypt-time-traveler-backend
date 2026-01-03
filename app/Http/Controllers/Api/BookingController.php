@@ -40,7 +40,7 @@ class BookingController extends Controller
         $children = $validated['children'] ?? 0;
         $pricePerAdult = $tour->price; // Or fetch from specific availability pricing
         $pricePerChild = $tour->price * 0.7; // Example child discount
-        
+
         $totalPrice = ($adults * $pricePerAdult) + ($children * $pricePerChild);
 
         $booking = Booking::create([
@@ -62,6 +62,15 @@ class BookingController extends Controller
             'status' => 'pending',
             'payment_status' => 'unpaid',
         ]);
+
+        // Trigger Admin Email
+        try {
+            $adminEmail = env('MAIL_FROM_ADDRESS', 'admin@example.com'); // Fallback or distinct admin email
+            \Illuminate\Support\Facades\Mail::to($adminEmail)->send(new \App\Mail\AdminBookingNotification($booking));
+        } catch (\Exception $e) {
+            // Log mail failure but don't fail the request
+            \Illuminate\Support\Facades\Log::error('Failed to send admin booking email: ' . $e->getMessage());
+        }
 
         return response()->json([
             'success' => true,

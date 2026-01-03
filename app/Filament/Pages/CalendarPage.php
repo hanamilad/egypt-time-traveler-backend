@@ -34,10 +34,25 @@ class CalendarPage extends Page
             ->map(function (Booking $booking) {
                 return [
                     'id' => 'booking-' . $booking->id,
-                    'title' => ($booking->tour->title_en ?? 'Unknown') . " - {$booking->name} ({$booking->phone})",
+                    'title' => ($booking->tour->title_en ?? 'Unknown'), // First line (mostly)
                     'start' => $booking->date->format('Y-m-d'),
                     'color' => '#fbbf24',
                     'textColor' => '#000',
+                    'extendedProps' => [
+                        'tourName' => $booking->tour->title_en ?? 'Unknown Tour',
+                        'guestName' => $booking->name,
+                        'guestCount' => "{$booking->travelers} Pax", // e.g. "3 Pax"
+                        'phone' => $booking->phone,
+                        'bookingId' => $booking->id,
+                        'email' => $booking->email,
+                    ],
+                    // We removed the 'url' here to prevent auto-navigation on click. 
+                    // Navigation will be handled by a specific part of the event content or double click if we wanted.
+                    // But requirement says "btn ... and when i click this btn open a popup".
+                    // We can keep 'url' if we want the card background to still link, but user wants specific actions.
+                    // Let's keep 'url' null so we handle clicks entirely in JS or allow specific navigation buttons.
+                    // Actually, let's keep 'url' but preventDefault in JS if blocking specific areas.
+                    // However, to satisfy "4 lines ... btn", custom rendering is best. 
                     'url' => \App\Filament\Resources\Bookings\BookingResource::getUrl('edit', ['record' => $booking]),
                 ];
             })
@@ -62,6 +77,39 @@ class CalendarPage extends Page
             ->toArray();
 
         return array_merge($bookings, $soldOutDates);
+    }
+
+    public function sendReminder(int $bookingId, string $message)
+    {
+        $booking = Booking::with('tour')->find($bookingId);
+
+        if (! $booking) {
+            Notification::make()
+                ->title('Booking not found')
+                ->danger()
+                ->send();
+            return;
+        }
+
+        try {
+            // Send the email
+            \Illuminate\Support\Facades\Mail::to($booking->email)
+                ->send(new \App\Mail\GuestReminderNotification($booking, $message));
+
+            Notification::make()
+                ->title('Reminder Sent Successfully')
+                ->success()
+                ->send();
+
+            // Dispatch event to close modal on frontend
+            $this->dispatch('reminder-sent');
+        } catch (\Exception $e) {
+            Notification::make()
+                ->title('Failed to send reminder')
+                ->body($e->getMessage())
+                ->danger()
+                ->send();
+        }
     }
 
     public function toggleSoldOut($date)
