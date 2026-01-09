@@ -11,7 +11,8 @@ class PackageController extends Controller
 {
     public function index()
     {
-        $packages = Tour::packages()
+        $packages = Tour::with('city')
+            ->packages()
             ->active()
             ->paginate(20);
 
