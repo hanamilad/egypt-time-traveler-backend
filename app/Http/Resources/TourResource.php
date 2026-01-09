@@ -42,7 +42,7 @@ class TourResource extends JsonResource
             unset($details['id']);
             unset($details['created_at']);
             unset($details['updated_at']);
-            
+
             $data = array_merge($data, $details);
         }
 
@@ -51,7 +51,12 @@ class TourResource extends JsonResource
         $data['faqs'] = $this->whenLoaded('faqs');
         $data['reviews'] = $this->whenLoaded('reviews');
         $data['pricings'] = $this->whenLoaded('pricings');
+        $data['pricings'] = $this->whenLoaded('pricings');
         $data['availabilities'] = $this->whenLoaded('availabilities');
+
+        // Append global policies
+        $policyService = app(\App\Services\PolicyService::class);
+        $data['policies'] = $policyService->getGlobalPolicies();
 
         return $data;
     }

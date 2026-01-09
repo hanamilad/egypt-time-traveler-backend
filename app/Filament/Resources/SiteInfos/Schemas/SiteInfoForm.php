@@ -4,6 +4,7 @@ namespace App\Filament\Resources\SiteInfos\Schemas;
 
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\KeyValue;
+use Filament\Forms\Components\RichEditor;
 use Filament\Schemas\Schema;
 
 class SiteInfoForm
@@ -38,6 +39,19 @@ class SiteInfoForm
                 ->keyLabel('المنصة')
                 ->valueLabel('الرابط')
                 ->nullable(),
+
+                RichEditor::make('booking_policy_en')
+                ->label('Booking Policy (EN)')
+                ->columnSpanFull(),
+            RichEditor::make('booking_policy_de')
+                ->label('Booking Policy (DE)')
+                ->columnSpanFull(),
+            RichEditor::make('cancellation_policy_en')
+                ->label('Cancellation Policy (EN)')
+                ->columnSpanFull(),
+            RichEditor::make('cancellation_policy_de')
+                ->label('Cancellation Policy (DE)')
+                ->columnSpanFull(),
         ]);
     }
 }
