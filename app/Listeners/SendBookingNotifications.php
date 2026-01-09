@@ -20,7 +20,6 @@ class SendBookingNotifications
         // 1. Send Admin Notification
         try {
             $adminEmail = config('mail.from.address', 'admin@example.com');
-            Log::info('Admin Email: ' . $adminEmail);
             Mail::to($adminEmail)->send(new AdminBookingNotification($booking));
         } catch (\Exception $e) {
             Log::error('Failed to send admin booking email: ' . $e->getMessage());
@@ -29,7 +28,6 @@ class SendBookingNotifications
         // 2. Send Guest Confirmation
         try {
             Mail::to($booking->email)->send(new GuestBookingConfirmation($booking));
-            Log::info('Guest Email: ' . $booking->email);
         } catch (\Exception $e) {
             Log::error('Failed to send guest booking confirmation email: ' . $e->getMessage());
         }
