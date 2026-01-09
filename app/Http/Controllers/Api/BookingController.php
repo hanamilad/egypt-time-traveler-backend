@@ -36,12 +36,12 @@ class BookingController extends Controller
             ], 422);
         }
         // Calculate price
-        $adults = $validated['adults'];
-        $children = $validated['children'] ?? 0;
-        $pricePerAdult = $tour->price; // Or fetch from specific availability pricing
-        $pricePerChild = $tour->price * 0.7; // Example child discount
-
-        $totalPrice = ($adults * $pricePerAdult) + ($children * $pricePerChild);
+        $pricing = app(\App\Services\BookingPricingService::class)->calculate(
+            $tour,
+            $validated['date'],
+            $validated['adults'],
+            $validated['children'] ?? 0
+        );
 
         $booking = Booking::create([
             'booking_reference' => strtoupper(Str::random(10)),
@@ -50,15 +50,15 @@ class BookingController extends Controller
             'name' => $validated['name'],
             'email' => $validated['email'],
             'phone' => $validated['phone'],
-            'travelers' => $adults + $children,
-            'adults' => $adults,
-            'children' => $children,
-            'price_per_adult' => $pricePerAdult,
-            'price_per_child' => $pricePerChild,
-            'price_per_person' => $pricePerAdult, // Legacy
+            'travelers' => $validated['adults'] + ($validated['children'] ?? 0),
+            'adults' => $validated['adults'],
+            'children' => $validated['children'] ?? 0,
+            'price_per_adult' => $pricing['price_per_adult'],
+            'price_per_child' => $pricing['price_per_child'],
+            'price_per_person' => $pricing['price_per_adult'], // Legacy
             'pickup_location' => $validated['pickup_location'] ?? null,
             'notes' => $validated['notes'] ?? null,
-            'total_price' => $totalPrice,
+            'total_price' => $pricing['total_price'],
             'status' => 'pending',
             'payment_status' => 'unpaid',
         ]);
