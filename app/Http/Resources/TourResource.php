@@ -17,7 +17,13 @@ class TourResource extends JsonResource
         $data = [
             'id' => $this->id,
             'slug' => $this->slug,
-            'city' => $this->city,
+            'city' => $this->whenLoaded('city', function () {
+                return [
+                    'id' => $this->city->id,
+                    'name_en' => $this->city->name_en,
+                    'name_de' => $this->city->name_de,
+                ];
+            }),
             'title_en' => $this->title_en,
             'title_de' => $this->title_de,
             'short_desc_en' => $this->short_desc_en,

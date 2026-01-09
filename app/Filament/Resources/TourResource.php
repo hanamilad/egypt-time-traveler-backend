@@ -27,22 +27,19 @@ class TourResource extends Resource
                 ->label('Title (EN)')
                 ->required()
                 ->live(onBlur: true)
-                ->afterStateUpdated(fn (string $state, $set) => $set('slug', Str::slug($state))),
+                ->afterStateUpdated(fn(string $state, $set) => $set('slug', Str::slug($state))),
             \Filament\Forms\Components\TextInput::make('slug')
                 ->required()
                 ->unique(ignoreRecord: true),
             \Filament\Forms\Components\TextInput::make('title_de')
                 ->label('Title (DE)')
                 ->required(),
-            \Filament\Forms\Components\Select::make('city')
-                ->options([
-                    'cairo' => 'Cairo',
-                    'luxor' => 'Luxor',
-                    'aswan' => 'Aswan',
-                    'alexandria' => 'Alexandria',
-                    'hurghada' => 'Hurghada',
-                ])
-                ->required(),
+            \Filament\Forms\Components\Select::make('city_id')
+                ->label('City')
+                ->relationship('city', 'name_en')
+                ->required()
+                ->searchable()
+                ->preload(),
 
             \Filament\Forms\Components\TextInput::make('price')
                 ->numeric()
@@ -160,7 +157,10 @@ class TourResource extends Resource
             ->columns([
                 Tables\Columns\ImageColumn::make('image'),
                 Tables\Columns\TextColumn::make('title_en')->searchable()->sortable()->limit(30),
-                Tables\Columns\TextColumn::make('city')->sortable(),
+                Tables\Columns\TextColumn::make('city.name_en')
+                    ->label('City')
+                    ->sortable()
+                    ->searchable(),
                 Tables\Columns\TextColumn::make('price')->money('USD')->sortable(),
                 Tables\Columns\TextColumn::make('rating')
                     ->numeric(1)
@@ -175,7 +175,7 @@ class TourResource extends Resource
                     ->boolean(),
                 Tables\Columns\TextColumn::make('status')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
+                    ->color(fn(string $state): string => match ($state) {
                         'active' => 'success',
                         'draft' => 'warning',
                         'archived' => 'danger',
@@ -183,14 +183,10 @@ class TourResource extends Resource
                 Tables\Columns\TextColumn::make('created_at')->date(),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('city')
-                    ->options([
-                        'cairo' => 'Cairo',
-                        'luxor' => 'Luxor',
-                        'aswan' => 'Aswan',
-                        'alexandria' => 'Alexandria',
-                        'hurghada' => 'Hurghada',
-                    ]),
+                Tables\Filters\SelectFilter::make('city_id')
+                    ->label('City')
+                    ->relationship('city', 'name_en')
+                    ->preload(),
                 Tables\Filters\SelectFilter::make('status')
                     ->options([
                         'active' => 'Active',
@@ -202,19 +198,19 @@ class TourResource extends Resource
                 \Filament\Actions\EditAction::make(),
                 \Filament\Actions\Action::make('reviews')
                     ->icon('heroicon-o-chat-bubble-left-right')
-                    ->url(fn (Tour $record) => TourResource::getUrl('reviews', ['record' => $record])),
+                    ->url(fn(Tour $record) => TourResource::getUrl('reviews', ['record' => $record])),
                 \Filament\Actions\Action::make('pricing')
                     ->icon('heroicon-o-currency-dollar')
-                    ->url(fn (Tour $record) => TourResource::getUrl('pricing', ['record' => $record])),
+                    ->url(fn(Tour $record) => TourResource::getUrl('pricing', ['record' => $record])),
                 \Filament\Actions\Action::make('faqs')
                     ->icon('heroicon-o-question-mark-circle')
-                    ->url(fn (Tour $record) => TourResource::getUrl('faqs', ['record' => $record])),
+                    ->url(fn(Tour $record) => TourResource::getUrl('faqs', ['record' => $record])),
                 \Filament\Actions\Action::make('itineraries')
                     ->icon('heroicon-o-map')
-                    ->url(fn (Tour $record) => TourResource::getUrl('itineraries', ['record' => $record])),
+                    ->url(fn(Tour $record) => TourResource::getUrl('itineraries', ['record' => $record])),
                 \Filament\Actions\Action::make('availabilities')
                     ->icon('heroicon-o-calendar-days')
-                    ->url(fn (Tour $record) => TourResource::getUrl('availabilities', ['record' => $record])),
+                    ->url(fn(Tour $record) => TourResource::getUrl('availabilities', ['record' => $record])),
             ])
             ->toolbarActions([
                 \Filament\Actions\BulkActionGroup::make([

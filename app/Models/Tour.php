@@ -11,7 +11,7 @@ class Tour extends Model
 
     protected $fillable = [
         'slug',
-        'city',
+        'city_id',
         'title_en',
         'title_de',
         'short_desc_en',
@@ -46,7 +46,7 @@ class Tour extends Model
     public function getImageUrlAttribute()
     {
         $value = $this->image;
-        
+
         if (!$value) {
             return null;
         }
@@ -63,6 +63,11 @@ class Tour extends Model
     public function details()
     {
         return $this->hasOne(TourDetail::class);
+    }
+
+    public function city()
+    {
+        return $this->belongsTo(City::class);
     }
 
     public function itineraries()
@@ -108,7 +113,14 @@ class Tour extends Model
     public function scopeCity($query, $city)
     {
         if ($city) {
-            return $query->where('city', $city);
+            // Support both city_id and city name
+            if (is_numeric($city)) {
+                return $query->where('city_id', $city);
+            } else {
+                return $query->whereHas('city', function ($q) use ($city) {
+                    $q->where('name_en', 'like', '%' . $city . '%');
+                });
+            }
         }
         return $query;
     }
@@ -138,7 +150,8 @@ class Tour extends Model
         ]);
     }
 
-    public function scopeExamples($query) {
+    public function scopeExamples($query)
+    {
         return $query;
     }
 }

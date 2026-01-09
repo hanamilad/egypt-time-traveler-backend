@@ -11,7 +11,7 @@ class TourController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Tour::active();
+        $query = Tour::with('city')->active();
 
         if ($request->has('featured') && $request->featured == 'true') {
             $query->where('featured', true);
@@ -26,29 +26,29 @@ class TourController extends Controller
         }
 
         if ($request->has('search')) {
-            $query->where(function($q) use ($request) {
+            $query->where(function ($q) use ($request) {
                 $q->where('title_en', 'like', '%' . $request->search . '%')
-                  ->orWhere('title_de', 'like', '%' . $request->search . '%');
+                    ->orWhere('title_de', 'like', '%' . $request->search . '%');
             });
         }
-        
+
         if ($request->has('rating')) {
             if ($request->rating === '4plus') {
                 $query->where('rating', '>=', 4);
             }
         }
-        
+
         if ($request->has('duration')) {
         }
 
         $tours = $query->paginate($request->get('limit', 20));
 
-        return TourResource::collection($tours); 
+        return TourResource::collection($tours);
     }
 
     public function show($slug)
     {
-        $tour = Tour::with(['details', 'itineraries', 'images', 'faqs', 'pricings', 'reviews' => function($query) {
+        $tour = Tour::with(['city', 'details', 'itineraries', 'images', 'faqs', 'pricings', 'reviews' => function ($query) {
             $query->where('status', 'approved')->with('photos');
         }])
             ->where('slug', $slug)
@@ -61,17 +61,17 @@ class TourController extends Controller
     {
         $tour = Tour::where('slug', $slug)->firstOrFail();
         $availability = $tour->availabilities()
-             ->where('date', '>=', now())
-             ->get()
-             ->map(function($item) {
-                 return [
-                     'date' => $item->date,
-                     'available_seats' => $item->available_seats,
-                     'special_price' => $item->special_price,
-                     'status' => $item->status,
-                     'is_available' => $item->available_seats > 0 && ($item->status === 'available'),
-                 ];
-             });
+            ->where('date', '>=', now())
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'date' => $item->date,
+                    'available_seats' => $item->available_seats,
+                    'special_price' => $item->special_price,
+                    'status' => $item->status,
+                    'is_available' => $item->available_seats > 0 && ($item->status === 'available'),
+                ];
+            });
 
         return response()->json(['data' => $availability]);
     }

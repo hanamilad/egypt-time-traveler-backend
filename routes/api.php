@@ -10,6 +10,10 @@ Route::get('/travel-info', [TravelInfoController::class, 'show']);
 Route::get('/social-videos', [\App\Http\Controllers\Api\SocialVideoController::class, 'index']);
 Route::get('/site-info', [\App\Http\Controllers\Api\SiteInfoController::class, 'index']);
 
+// Cities
+Route::get('/cities', [\App\Http\Controllers\Api\CityController::class, 'index']);
+Route::get('/cities/{id}', [\App\Http\Controllers\Api\CityController::class, 'show']);
+
 // Tours
 Route::get('/tours', [\App\Http\Controllers\Api\TourController::class, 'index']);
 Route::get('/packages', [\App\Http\Controllers\Api\PackageController::class, 'index']);
@@ -20,5 +24,3 @@ Route::post('/tours/{slug}/reviews', [\App\Http\Controllers\Api\TourReviewContro
 
 // Bookings
 Route::post('/bookings/create', [\App\Http\Controllers\Api\BookingController::class, 'store']);
-
-    
