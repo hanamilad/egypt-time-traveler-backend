@@ -72,6 +72,13 @@ class BookingController extends Controller
             \Illuminate\Support\Facades\Log::error('Failed to send admin booking email: ' . $e->getMessage());
         }
 
+        // Trigger Guest Confirmation Email
+        try {
+            \Illuminate\Support\Facades\Mail::to($booking->email)->send(new \App\Mail\GuestBookingConfirmation($booking));
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Failed to send guest booking confirmation email: ' . $e->getMessage());
+        }
+
         return response()->json([
             'success' => true,
             'message' => 'Booking request received',
