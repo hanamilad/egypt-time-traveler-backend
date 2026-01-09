@@ -5,13 +5,18 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use App\Models\Tour;
-use App\Services\AvailabilityService;
+use App\Services\BookingService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
-use App\Models\TourAvailability;
 
 class BookingController extends Controller
 {
+    protected $bookingService;
+
+    public function __construct(BookingService $bookingService)
+    {
+        $this->bookingService = $bookingService;
+    }
+
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -26,64 +31,20 @@ class BookingController extends Controller
             'notes' => 'nullable|string',
         ]);
 
-        $tour = Tour::findOrFail($validated['tour_id']);
+        try {
+            $booking = $this->bookingService->createBooking($validated);
 
-        // Global Check: Check if the date is closed for all tours (guide busy)
-        if (app(AvailabilityService::class)->isDateClosed($validated['date'])) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Booking request received',
+                'booking_id' => $booking->id,
+                'reference' => $booking->booking_reference
+            ], 201);
+        } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Sorry, we are fully booked (Sold Out) for the selected date.'
-            ], 422);
+                'message' => $e->getMessage()
+            ], $e->getCode() ?: 400);
         }
-        // Calculate price
-        $pricing = app(\App\Services\BookingPricingService::class)->calculate(
-            $tour,
-            $validated['date'],
-            $validated['adults'],
-            $validated['children'] ?? 0
-        );
-
-        $booking = Booking::create([
-            'booking_reference' => strtoupper(Str::random(10)),
-            'tour_id' => $tour->id,
-            'date' => $validated['date'],
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'phone' => $validated['phone'],
-            'travelers' => $validated['adults'] + ($validated['children'] ?? 0),
-            'adults' => $validated['adults'],
-            'children' => $validated['children'] ?? 0,
-            'price_per_adult' => $pricing['price_per_adult'],
-            'price_per_child' => $pricing['price_per_child'],
-            'price_per_person' => $pricing['price_per_adult'], // Legacy
-            'pickup_location' => $validated['pickup_location'] ?? null,
-            'notes' => $validated['notes'] ?? null,
-            'total_price' => $pricing['total_price'],
-            'status' => 'pending',
-            'payment_status' => 'unpaid',
-        ]);
-
-        // Trigger Admin Email
-        try {
-            $adminEmail = env('MAIL_FROM_ADDRESS', 'admin@example.com'); // Fallback or distinct admin email
-            \Illuminate\Support\Facades\Mail::to($adminEmail)->send(new \App\Mail\AdminBookingNotification($booking));
-        } catch (\Exception $e) {
-            // Log mail failure but don't fail the request
-            \Illuminate\Support\Facades\Log::error('Failed to send admin booking email: ' . $e->getMessage());
-        }
-
-        // Trigger Guest Confirmation Email
-        try {
-            \Illuminate\Support\Facades\Mail::to($booking->email)->send(new \App\Mail\GuestBookingConfirmation($booking));
-        } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error('Failed to send guest booking confirmation email: ' . $e->getMessage());
-        }
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Booking request received',
-            'booking_id' => $booking->id,
-            'reference' => $booking->booking_reference
-        ], 201);
     }
 }

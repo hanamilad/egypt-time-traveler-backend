@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Tour;
 use App\Http\Resources\TourResource;
-use Illuminate\Http\Request;
 
 class PackageController extends Controller
 {

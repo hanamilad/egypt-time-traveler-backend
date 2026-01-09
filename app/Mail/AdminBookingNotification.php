@@ -31,7 +31,7 @@ class AdminBookingNotification extends Mailable
     {
         return new Envelope(
             subject: 'New Booking Request - ' . $this->booking->booking_reference,
-            from: new \Illuminate\Mail\Mailables\Address(env('MAIL_FROM_ADDRESS'), env('MAIL_FROM_NAME'))
+            from: new \Illuminate\Mail\Mailables\Address(config('mail.from.address'), config('mail.from.name'))
         );
     }
 
