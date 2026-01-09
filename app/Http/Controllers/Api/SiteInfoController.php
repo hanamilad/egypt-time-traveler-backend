@@ -26,6 +26,12 @@ class SiteInfoController extends Controller
                     'email' => null,
                     'availability' => null,
                 ],
+                'policiy' => [
+                    'booking_policy_en' => null,
+                    'booking_policy_de' => null,
+                    'cancellation_policy_en' => null,
+                    'cancellation_policy_de' => null
+                ]
             ]);
         }
 
@@ -51,6 +57,12 @@ class SiteInfoController extends Controller
                 'email' => $info->email,
                 'availability' => $info->availability,
             ],
+            'policiy' => [
+                'booking_policy_en' => $info->booking_policy_en,
+                'booking_policy_de' => $info->booking_policy_de,
+                'cancellation_policy_en' => $info->cancellation_policy_en,
+                'cancellation_policy_de' => $info->cancellation_policy_de
+            ]
         ]);
     }
 }
