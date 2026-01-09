@@ -5,15 +5,12 @@ namespace App\Listeners;
 use App\Events\BookingCreated;
 use App\Mail\AdminBookingNotification;
 use App\Mail\GuestBookingConfirmation;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
 
-class SendBookingNotifications implements ShouldQueue
+class SendBookingNotifications
 {
-    use InteractsWithQueue;
-
     /**
      * Handle the event.
      */
@@ -24,6 +21,7 @@ class SendBookingNotifications implements ShouldQueue
         // 1. Send Admin Notification
         try {
             $adminEmail = config('mail.from.address', 'admin@example.com');
+            Log::info('Admin Email: ' . $adminEmail);
             Mail::to($adminEmail)->send(new AdminBookingNotification($booking));
         } catch (\Exception $e) {
             Log::error('Failed to send admin booking email: ' . $e->getMessage());
@@ -32,6 +30,7 @@ class SendBookingNotifications implements ShouldQueue
         // 2. Send Guest Confirmation
         try {
             Mail::to($booking->email)->send(new GuestBookingConfirmation($booking));
+            Log::info('Guest Email: ' . $booking->email);
         } catch (\Exception $e) {
             Log::error('Failed to send guest booking confirmation email: ' . $e->getMessage());
         }
