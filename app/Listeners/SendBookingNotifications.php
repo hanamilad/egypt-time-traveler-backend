@@ -5,7 +5,6 @@ namespace App\Listeners;
 use App\Events\BookingCreated;
 use App\Mail\AdminBookingNotification;
 use App\Mail\GuestBookingConfirmation;
-use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
 
