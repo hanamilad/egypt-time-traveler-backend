@@ -165,7 +165,7 @@
         <div class="footer">
             <p>&copy; {{ date('Y') }} Time Traveler. All rights reserved.</p>
             <p>
-                <a href="#" class="btn-link">www.egypt-time-traveler.com</a>
+                <a href="#" class="btn-link">www.timetraveller.tours</a>
             </p>
         </div>
     </div>
