@@ -45,7 +45,7 @@ class TourReviewController extends Controller
             'author' => $validated['author'],
             'country' => $validated['country'] ?? null,
             'rating' => $validated['rating'],
-            'comment_en' => $validated['comment'], // Assuming default to EN for now
+            'comment' => $validated['comment'], // Assuming default to EN for now
             'date' => now(),
             'status' => 'approved',
         ]);

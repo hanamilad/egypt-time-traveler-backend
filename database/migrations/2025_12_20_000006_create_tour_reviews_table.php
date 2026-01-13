@@ -15,8 +15,7 @@ return new class extends Migration
             $table->string('author', 100);
             $table->string('country', 100)->nullable();
             $table->unsignedTinyInteger('rating');
-            $table->text('comment_en');
-            $table->text('comment_de')->nullable();
+            $table->text('comment');
             $table->date('date');
             $table->string('avatar', 500)->nullable();
             $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending');

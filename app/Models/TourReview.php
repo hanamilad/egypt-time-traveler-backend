@@ -25,8 +25,7 @@ class TourReview extends Model
         'author',
         'country',
         'rating',
-        'comment_en',
-        'comment_de',
+        'comment',
         'date',
         'status',
     ];

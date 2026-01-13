@@ -29,7 +29,7 @@ class ReviewsRelationManager extends RelationManager
                     ->numeric()
                     ->minValue(1)
                     ->maxValue(5),
-                Forms\Components\Textarea::make('comment_en')
+                Forms\Components\Textarea::make('comment')
                     ->label('Comment')
                     ->required()
                     ->columnSpanFull(),
@@ -56,10 +56,10 @@ class ReviewsRelationManager extends RelationManager
                         $state >= 3 => 'warning',
                         default => 'danger',
                     }),
-                Tables\Columns\TextColumn::make('comment_en')
+                Tables\Columns\TextColumn::make('comment')
                     ->label('Comment')
                     ->limit(50)
-                    ->tooltip(fn ($record) => $record->comment_en),
+                    ->tooltip(fn ($record) => $record->comment),
                 Tables\Columns\TextColumn::make('status')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
